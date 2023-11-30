@@ -1,0 +1,73 @@
+---
+name: ((deployment_name))
+
+stemcells:
+- alias: default
+  os: ubuntu-jammy
+  version: latest
+releases:
+  - name: defectdojo
+    version: latest
+  - name: bpm
+    version: latest
+  - name: routing
+    version: latest
+  - name: bosh-dns-aliases
+    version: latest
+
+update:
+  canaries: 2
+  max_in_flight: 1
+  canary_watch_time: 5000-60000
+  update_watch_time: 5000-60000
+instance_groups:
+- name: defectdojo
+  azs: [z1, z2]
+  instances: 1
+  jobs:
+    - name: bosh-dns-aliases
+      properties:
+        aliases:
+        - domain: opsuaa.internal
+          targets:
+          - deployment: opsuaa
+            domain: bosh
+            instance_group: opsuaa
+            network: opsuaa
+            query: '*'
+      release: bosh-dns-aliases
+    - name: bpm
+      release: bpm
+    - name: godojo
+      release: defectdojo
+      properties:
+        dojo:
+          install:
+            DD_Quiet: ((dojo_install_quiet))
+            DD_Trace: ((dojo_install_trace))
+          DD_DB_Local: ((dojo_db_local))
+          DD_DB_Exists: ((dojo_db_exists))
+          DD_DB_Ruser: ((dojo_db_ruser))
+          DD_DB_Rpass: ((dojo_db_rpass))
+          DD_DB_Name: ((dojo_db_name))
+          DD_DB_User: ((dojo_db_user))
+          DD_DB_Pass: ((dojo_db_pass))
+          DD_DB_Host: ((dojo_db_host))
+          DD_DB_Port: ((dojo_db_port))
+          DD_OS_User: ((dojo_os_user))
+          DD_OS_Pass: ((dojo_os_pass))
+          DD_OS_Group: ((dojo_os_group))
+          DD_OS_UID: ((dojo_os_uid))
+          DD_OS_GID: ((dojo_os_gid))
+          DD_ADMIN_User: ((dojo_admin_user))
+          DD_ADMIN_Pass: ((dojo_admin_pass))
+    - name: nginx_dojo
+      release: defectdojo
+      properties:
+        nginx:
+            server_name: ((nginx_server_name))
+  vm_type: t3.medium
+  stemcell: default
+  persistent_disk: 10240
+  networks:
+  - name: default

@@ -1,0 +1,20 @@
+deployment_name: defectdojo-staging
+dojo_install_quiet: false
+dojo_install_trace: true
+dojo_db_local: false
+dojo_db_exists: true
+dojo_db_ruser: ""
+dojo_db_rpass: ""
+dojo_db_name: ""
+dojo_db_user: ""
+dojo_db_pass: ""
+dojo_db_host: ""
+dojo_db_port: ""
+dojo_os_user: ""
+dojo_os_pass: ""
+dojo_os_group: ""
+dojo_os_uid: 
+dojo_os_gid: 
+dojo_admin_user: ""
+dojo_admin_pass: ""
+nginx_server_name: dojo.fr-stage.cloud.gov
