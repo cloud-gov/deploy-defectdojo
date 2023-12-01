@@ -1,4 +1,6 @@
 deployment_name: defectdojo-staging
+defectdojo_network: staging-defectdojo
+defectdojo_extension: staging-defectdojo-lb
 dojo_install_quiet: false
 dojo_install_trace: true
 dojo_db_local: false
