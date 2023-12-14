@@ -40,27 +40,6 @@ instance_groups:
       release: bpm
     - name: godojo
       release: defectdojo
-      properties:
-        dojo:
-          install:
-            DD_Quiet: ((dojo_install_quiet))
-            DD_Trace: ((dojo_install_trace))
-          DD_DB_Local: ((dojo_db_local))
-          DD_DB_Exists: ((dojo_db_exists))
-          DD_DB_Ruser: ((dojo_db_ruser))
-          DD_DB_Rpass: ((dojo_db_rpass))
-          DD_DB_Name: ((dojo_db_name))
-          DD_DB_User: ((dojo_db_user))
-          DD_DB_Pass: ((dojo_db_pass))
-          DD_DB_Host: ((dojo_db_host))
-          DD_DB_Port: ((dojo_db_port))
-          DD_OS_User: ((dojo_os_user))
-          DD_OS_Pass: ((dojo_os_pass))
-          DD_OS_Group: ((dojo_os_group))
-          DD_OS_UID: ((dojo_os_uid))
-          DD_OS_GID: ((dojo_os_gid))
-          DD_ADMIN_User: ((dojo_admin_user))
-          DD_ADMIN_Pass: ((dojo_admin_pass))
     - name: nginx_dojo
       release: defectdojo
       properties:
@@ -70,6 +49,6 @@ instance_groups:
   stemcell: default
   persistent_disk: 10240
   networks:
-  - name: ((defectdojo_network))
+    - name: ((defectdojo_network))
   vm_extensions:
     - ((defectdojo_extension))

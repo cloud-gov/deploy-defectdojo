@@ -1,22 +1,32 @@
-deployment_name: defectdojo-staging
-defectdojo_network: staging-defectdojo
-defectdojo_extension: staging-defectdojo-lb
-dojo_install_quiet: false
-dojo_install_trace: true
-dojo_db_local: false
-dojo_db_exists: true
-dojo_db_ruser: ""
-dojo_db_rpass: ""
-dojo_db_name: ""
-dojo_db_user: ""
-dojo_db_pass: ""
-dojo_db_host: ""
-dojo_db_port: ""
-dojo_os_user: ""
-dojo_os_pass: ""
-dojo_os_group: ""
-dojo_os_uid: 
-dojo_os_gid: 
-dojo_admin_user: ""
-dojo_admin_pass: ""
-nginx_server_name: dojo.fr-stage.cloud.gov
+nginx_server_name: defectdojo.fr-stage.cloud.gov
+deployment_name: defectdojo
+defectdojo_network:
+defectdojo_extension: 
+DD_Version: "2.29.1"
+DD_Quiet: false
+DD_Trace: true
+DD_Redact: true
+DD_Root: "/var/vcap/packages/godojo/bin"
+DD_Source: "django-DefectDojo"
+DD_Files: "django-DefectDojo"
+DD_Media: "media"
+DD_Static: "static"
+DD_App: "dojo"
+DD_DB_Engine: "PostgreSQL"
+DD_DB_Local: false
+DD_DB_Exists: true
+DD_DB_Ruser: ""
+DD_DB_Rpass: ""
+DD_DB_Name: ""
+DD_DB_User: ""
+DD_DB_Pass: ""
+DD_DB_Host: ""
+DD_DB_Port: 5432
+DD_DB_Drop: false
+DD_OS_User: ""
+DD_OS_Pass: ""
+DD_OS_Group: ""
+DD_OS_UID: 
+DD_OS_GID: 
+DD_ADMIN_User: ""
+DD_ADMIN_Pass: ""
