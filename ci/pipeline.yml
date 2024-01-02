@@ -1,0 +1,106 @@
+---
+jobs:
+
+- name: build-defectdojo-release
+  plan:
+  - in_parallel:
+    - get: release-git-repo
+      resource: defectdojo-release-git-repo
+      trigger: true
+    - get: deploy-git-repo
+      resource: defectdojo-deploy-git-repo
+    - get: pipeline-tasks
+    - get: final-builds-dir-tarball
+      resource: defectdojo-final-builds-dir-tarball
+    - get: releases-dir-tarball
+      resource: defectdojo-releases-dir-tarball
+    - get: general-task
+  - task: finalize-release
+    file: pipeline-tasks/finalize-bosh-release.yml
+    tags: [iaas]
+    params:
+      PRIVATE_YML_CONTENT: |-
+        ---
+        blobstore:
+          options:
+            region: ((s3-bosh-blobstore-info.region))
+            bucket_name: ((s3-bosh-blobstore-info.bucket_name))
+            credentials_source: ((s3-bosh-blobstore-info.credentials_source))
+            server_side_encryption: ((s3-bosh-blobstore-info.server_side_encryption))
+  - in_parallel:
+    - put: defectdojo-release
+      tags: [iaas]
+      params:
+        file: finalized-release/defectdojo-*.tgz
+    - put: defectdojo-final-builds-dir-tarball
+      tags: [iaas]
+      params:
+        file: finalized-release/final-builds-dir-defectdojo.tgz
+    - put: defectdojo-releases-dir-tarball
+      tags: [iaas]
+      params:
+        file: finalized-release/releases-dir-defectdojo.tgz
+
+resources:
+- name: defectdojo-release-git-repo
+  type: git
+  source:
+    commit_verification_keys: ((cloud-gov-pgp-keys))
+    uri: https://github.com/cloud-gov/defectdojo-boshrelease
+    branch: pipeline
+
+- name: defectdojo-final-builds-dir-tarball
+  type: s3-iam
+  source: &bosh-releases-bucket-info
+    bucket: ((s3-bosh-releases-bucket))
+    region_name: ((aws-region))
+    server_side_encryption: AES256
+    versioned_file: final-builds-dir-defectdojo.tgz
+
+- name: defectdojo-releases-dir-tarball
+  type: s3-iam
+  source:
+    <<: *bosh-releases-bucket-info
+    versioned_file: release_dir_defectdojo.tgz
+  
+- name: defectdojo-release
+  type: s3-iam
+  source:
+    bucket: ((s3-bosh-releases-bucket))
+    region_name: ((aws-region))
+    regexp: defectdojo-([\d\.]*).tgz
+    server_side_encryption: AES256
+
+- name: general-task
+  type: registry-image
+  source:
+    aws_access_key_id: ((ecr_aws_key))
+    aws_secret_access_key: ((ecr_aws_secret))
+    repository: general-task
+    aws_region: us-gov-west-1
+    tag: latest
+
+resource_types:
+- name: registry-image
+  type: registry-image
+  source:
+    aws_access_key_id: ((ecr_aws_key))
+    aws_secret_access_key: ((ecr_aws_secret))
+    repository: registry-image-resource
+    aws_region: us-gov-west-1
+    tag: latest
+
+- name: slack-notification
+  type: docker-image
+  source:
+    repository: cfcommunity/slack-notification-resource
+
+- name: bosh-deployment
+  type: docker-image
+  source:
+    repository: cloudfoundry/bosh-deployment-resource
+
+- name: s3-iam
+  type: docker-image
+  source:
+    repository: 18fgsa/s3-resource

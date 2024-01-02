@@ -40,6 +40,40 @@ instance_groups:
       release: bpm
     - name: godojo
       release: defectdojo
+      properties:
+        dojo:
+          install:
+            version: ((defectdojo_version))
+            quiet:  ((defectdojo_quiet))
+            trace: ((defectdojo_trace))
+            redact: ((defectdojo_redact))
+            root:  ((defectdojo_root))
+            source: ((defectdojo_source))
+            files: ((defectdojo_files))
+            media: ((defectdojo_media))
+            static: ((defectdojo_static))
+            app: ((defectdojo_app))
+          db:
+            engine: ((defectdojo_db_engine))
+            local: ((defectdojo_db_local))
+            exists: ((defectdojo_db_exists))
+            ruser: ((defectdojo_db_ruser))
+            rpass: ((defectdojo_db_rpass))
+            name: ((defectdojo_db_name))
+            user: ((defectdojo_db_user))
+            pass: ((defectdojo_db_pass))
+            host: ((defectdojo_db_host))
+            port: ((defectdojo_db_port))
+            drop: ((defectdojo_db_drop))
+          os:
+            user: ((defectdojo_os_user))
+            pass: ((defectdojo_os_pass))
+            group: ((defectdojo_os_group))
+            uid: ((defectdojo_os_uid))
+            gid: ((defectdojo_os_gid))
+          admin:
+            user: ((defectdojo_admin_user))
+            pass: ((defectdojo_admin_pass))
     - name: nginx_dojo
       release: defectdojo
       properties:
