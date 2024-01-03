@@ -7,8 +7,6 @@ jobs:
     - get: release-git-repo
       resource: defectdojo-release-git-repo
       trigger: true
-    - get: deploy-git-repo
-      resource: defectdojo-deploy-git-repo
     - get: pipeline-tasks
     - get: final-builds-dir-tarball
       resource: defectdojo-final-builds-dir-tarball
@@ -70,6 +68,13 @@ resources:
     region_name: ((aws-region))
     regexp: defectdojo-([\d\.]*).tgz
     server_side_encryption: AES256
+
+- name: pipeline-tasks
+  type: git
+  source:
+    commit_verification_keys: ((cloud-gov-pgp-keys))
+    uri: https://github.com/cloud-gov/cg-pipeline-tasks.git
+    branch: main
 
 - name: general-task
   type: registry-image
