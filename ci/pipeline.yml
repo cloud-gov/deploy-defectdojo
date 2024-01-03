@@ -59,7 +59,7 @@ resources:
   type: s3-iam
   source:
     <<: *bosh-releases-bucket-info
-    versioned_file: release_dir_defectdojo.tgz
+    versioned_file: releases-dir-defectdojo.tgz
   
 - name: defectdojo-release
   type: s3-iam
