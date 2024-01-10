@@ -91,6 +91,7 @@ instance_groups:
         provider: oidc
         client_id: ((oauth_proxy_client_id))
         client_secret: ((oauth_proxy_client_secret))
+        cookie_secret: ((oauth_proxy_cookie_secret))
         email_domain: gsa.gov
         redirect_url: ((oauth_proxy_redirect_url))
         oidc_issuer_url: ((oauth_proxy_oidc_issuer_url))
