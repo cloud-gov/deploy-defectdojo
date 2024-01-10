@@ -1,32 +1,32 @@
 nginx_server_name: defectdojo.fr-stage.cloud.gov
-deployment_name: defectdojo
+deployment_name: defectdojo-staging
 defectdojo_network:
 defectdojo_extension: 
-defectdojo_version: "2.29.1"
+defectdojo_version: 2.29.1
 defectdojo_quiet: false
 defectdojo_trace: true
 defectdojo_redact: true
-defectdojo_root: "/var/vcap/packages/godojo/bin"
-defectdojo_source: "django-DefectDojo"
-defectdojo_files: "django-DefectDojo"
-defectdojo_media: "media"
-defectdojo_static: "static"
-defectdojo_app: "dojo"
-defectdojo_db_engine: "PostgreSQL"
+defectdojo_root: /var/vcap/packages/godojo/bin
+defectdojo_source: django-DefectDojo
+defectdojo_files: django-DefectDojo
+defectdojo_media: media
+defectdojo_static: static
+defectdojo_app: dojo
+defectdojo_db_engine: PostgreSQL
 defectdojo_db_local: false
 defectdojo_db_exists: true
-defectdojo_db_ruser: ""
-defectdojo_db_rpass: ""
-defectdojo_db_name: ""
-defectdojo_db_user: ""
-defectdojo_db_pass: ""
-defectdojo_db_host: ""
+defectdojo_db_ruser: 
+defectdojo_db_rpass: 
+defectdojo_db_name: 
+defectdojo_db_user: 
+defectdojo_db_pass: 
+defectdojo_db_host: 
 defectdojo_db_port: 5432
 defectdojo_db_drop: false
-defectdojo_os_user: ""
-defectdojo_os_pass: ""
-defectdojo_os_group: ""
+defectdojo_os_user: 
+defectdojo_os_pass: 
+defectdojo_os_group: 
 defectdojo_os_uid: 
 defectdojo_os_gid: 
-defectdojo_admin_user: ""
-defectdojo_admin_pass: ""
+defectdojo_admin_user: 
+defectdojo_admin_pass: 
