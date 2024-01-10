@@ -86,8 +86,8 @@ instance_groups:
     - name: oauth2-proxy
       release: oauth2-proxy
       properties:
-        address: http://127.0.0.1:8081
-        upstream: http://127.0.0.1:8082
+        address: http://127.0.0.1:8082
+        upstream: http://127.0.0.1:8080
         provider: oidc
         client_id: ((oauth_proxy_client_id))
         client_secret: ((oauth_proxy_client_secret))
@@ -99,8 +99,8 @@ instance_groups:
       release: secureproxy
       properties:
         secureproxy:
-          listen_port: 8080
-          proxy_port: 8081
+          listen_port: 8081
+          proxy_port: 8082
   vm_type: t3.medium
   stemcell: default
   persistent_disk: 10240
