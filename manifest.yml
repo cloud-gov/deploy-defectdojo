@@ -55,6 +55,7 @@ instance_groups:
             media: ((defectdojo_media))
             static: ((defectdojo_static))
             app: ((defectdojo_app))
+            site_url: ((defectdojo_site_url))
           db:
             engine: ((defectdojo_db_engine))
             local: ((defectdojo_db_local))
@@ -76,6 +77,14 @@ instance_groups:
           admin:
             user: ((defectdojo_admin_user))
             pass: ((defectdojo_admin_pass))
+          csrf:
+            trusted_origins: ((defectdojo_csrf_trusted_origins))
+          auth:
+            oidc_endpoint: ((defectdojo_auth_domain))
+            oidc_key: ((defectdojo_auth_client))
+            oidc_secret: ((defectdojo_auth_secret))
+            oidc_username_key: ((defectdojo_oidc_username_key))
+            oidc_whitelisted_domains: ((defectdojo_oidc_whitelisted_domains))
     - name: nginx_dojo
       release: defectdojo
       properties:
@@ -96,11 +105,11 @@ instance_groups:
         browser_xss_filter: True
         content_type_nosniff: True
     - name: secureproxy
-      release: secureproxy
       properties:
-        secureproxy:
-          listen_port: 8080
-          proxy_port: 8081
+      secureproxy:
+        listen_port: 8080
+        proxy_port: 8081
+    release: secureproxy
   vm_type: t3.medium
   stemcell: default
   persistent_disk: 10240
