@@ -1,12 +1,12 @@
 nginx_server_name: defectdojo.fr-stage.cloud.gov
 deployment_name: defectdojo-staging
-defectdojo_network:
+defectdojo_network: 
 defectdojo_extension: 
-defectdojo_version: 2.29.1
+defectdojo_version: 2.30.3
 defectdojo_quiet: false
 defectdojo_trace: true
 defectdojo_redact: true
-defectdojo_root: /var/vcap/packages/godojo/bin
+defectdojo_root: /var/vcap/jobs/godojo
 defectdojo_source: django-DefectDojo
 defectdojo_files: django-DefectDojo
 defectdojo_media: media
@@ -30,3 +30,16 @@ defectdojo_os_uid:
 defectdojo_os_gid: 
 defectdojo_admin_user: 
 defectdojo_admin_pass: 
+defectdojo_csrf_trusted_origins: https://defectdojo.fr-stage.cloud.gov
+defectdojo_auth_client: 
+defectdojo_auth_secret: 
+defectdojo_auth_domain: 
+defectdojo_site_url: 
+defectdojo_oidc_username_key: 
+defectdojo_oidc_id_key: 
+defectdojo_oidc_whitelisted_domains: 
+defectdojo_oidc_token_issuer: 
+defectdojo_oidc_access_token_url: 
+defectdojo_oidc_authorization_url: 
+defectdojo_oidc_userinfo_url: 
+defectdojo_oidc_jwks_uri: 
