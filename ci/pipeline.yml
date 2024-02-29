@@ -38,6 +38,58 @@ jobs:
       tags: [iaas]
       params:
         file: finalized-release/releases-dir-defectdojo.tgz
+  on_failure:
+    put: slack
+    params: &slack-failure-params
+      text: |
+        :x: FAILED to build Defect Dojo BOSH release
+        <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
+      channel: ((slack-failure-channel))
+      username: ((slack-username))
+      icon_url: ((slack-icon-url))
+  on_success:
+    put: slack
+    params: &slack-success-params
+      username: ((slack-username))
+      icon_url: ((slack-icon-url))
+      channel: ((slack-success-channel))
+      text: |
+        :white_check_mark: Successfully built Defect Dojo BOSH release
+        <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
+
+
+- name: deploy-defectdojo-staging
+  plan:
+  - in_parallel:
+    - get: pipeline-tasks
+    - get: deploy-defectdojo-config
+    - get: defectdojo-release
+    - get: defectdojo-stemcell-jammy
+    - get: general-task
+  - put: defectdojo-staging-deployment
+    params:
+      manifest: deploy-defectdojo-config/ci/manifest.yml
+      releases:
+      - defectdojo-release/*.tgz
+      stemcells:
+      - defectdojo-stemcell-jammy/*.tgz
+      vars_files:
+      - deploy-defectdojo-config/varsfiles/staging.yml
+  on_success:
+    put: slack
+    params:
+      <<: *slack-success-params
+      text: |
+        :white_check_mark: Successfully deployed defect dojo on staging
+        <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
+  on_failure:
+    put: slack
+    params:
+      <<: *slack-failure-params
+      text: |
+        :x: FAILED to deploy defect dojo on staging
+        <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
+
 
 resources:
 - name: defectdojo-release-git-repo
@@ -69,12 +121,38 @@ resources:
     regexp: defectdojo-([\d\.]*).tgz
     server_side_encryption: AES256
 
+- name: deploy-defectdojo-config
+  type: git
+  source:
+    commit_verification_keys: ((cloud-gov-pgp-keys))
+    uri: https://github.com/cloud-gov/cg-deploy-defectdojo.git
+    branch: init
+
+- name: defectdojo-stemcell-jammy
+  source:
+    name: bosh-aws-xen-hvm-ubuntu-jammy-go_agent
+  type: bosh-io-stemcell
+
 - name: pipeline-tasks
   type: git
   source:
     commit_verification_keys: ((cloud-gov-pgp-keys))
     uri: https://github.com/cloud-gov/cg-pipeline-tasks.git
     branch: main
+
+- name: defectdojo-staging-deployment
+  type: bosh-deployment
+  source: &bosh-params-staging
+    target: ((defectdojo-staging-deployment-target))
+    client: ci
+    client_secret: ((tooling_bosh_uaa_ci_client_secret))
+    ca_cert: ((common_ca_cert))
+    deployment: defectdojo-staging
+
+- name: slack
+  type: slack-notification
+  source:
+    url: ((slack-webhook-url))
 
 - name: general-task
   type: registry-image
