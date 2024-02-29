@@ -64,6 +64,7 @@ jobs:
     - get: pipeline-tasks
     - get: deploy-defectdojo-config
     - get: defectdojo-release
+      passed: [build-defectdojo-release]
     - get: defectdojo-stemcell-jammy
     - get: general-task
   - put: defectdojo-staging-deployment
