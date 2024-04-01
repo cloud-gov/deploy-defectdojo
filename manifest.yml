@@ -92,7 +92,7 @@ instance_groups:
       properties:
         nginx:
             server_name: ((nginx_server_name))
-  vm_type: t3.medium
+  vm_type: t3.large
   stemcell: default
   persistent_disk: 10240
   networks:
