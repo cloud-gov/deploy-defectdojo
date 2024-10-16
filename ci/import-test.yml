@@ -4,7 +4,8 @@ platform: linux
 inputs:
   - name: deploy-defectdojo-config
 
-run: deploy-defectdojo-config/ci/import-test.sh
+run:
+  path: deploy-defectdojo-config/ci/import-test.sh
 
 params:
   DEFECTDOJO_USER_PROFILE_URL: ((defectdojo_import_url))
