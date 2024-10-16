@@ -8,5 +8,5 @@ run:
   path: deploy-defectdojo-config/ci/import-test.sh
 
 params:
-  DEFECTDOJO_USER_PROFILE_URL: ((defectdojo_import_url))
+  DEFECTDOJO_IMPORT_URL: ((defectdojo_import_url))
   DEFECTDOJO_AUTH_TOKEN: ((defectdojo_auth_token))
