@@ -1,3 +1,6 @@
+---
+platform: linux
+
 inputs:
   - name: deploy-defectdojo-config
 
