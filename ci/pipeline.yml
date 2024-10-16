@@ -142,6 +142,25 @@ jobs:
           :x: FAILED to turn on deduplication for staging DefectDojo
           <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
 
+  - name: staging-test-import
+    plan:
+      - in_parallel:
+          - get: deploy-defectdojo-config
+            passed: [deploy-defectdojo-staging]
+            trigger: true
+          - get: general-task
+      - task: test-import
+        image: general-task
+        file: deploy-defectdojo-config/ci/import-test.yml
+
+    on_failure:
+      put: slack
+      params:
+        <<: *slack-failure-params
+        text: |
+          :x: FAILED to import test scan for staging DefectDojo
+          <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
+
 resources:
   - name: defectdojo-release-git-repo
     type: git
