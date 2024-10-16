@@ -17,7 +17,7 @@ if [[ $deduplication_status != "true" ]]; then
   -H "Authorization: Token $DEFECTDOJO_AUTH_TOKEN" \
   -d '{"enable_deduplication": true}' > result.json
 
-  deduplication_status=$(cat result.json | jq '.results[].enable_deduplication')
+  deduplication_status=$(cat result.json | jq '.enable_deduplication')
   if [[ $deduplication_status != "true" ]]; then
     echo "error turning deduplication on"
     exit 1;
