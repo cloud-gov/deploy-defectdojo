@@ -49,15 +49,6 @@ jobs:
         channel: ((slack-failure-channel))
         username: ((slack-username))
         icon_url: ((slack-icon-url))
-    on_success:
-      put: slack
-      params: &slack-success-params
-        username: ((slack-username))
-        icon_url: ((slack-icon-url))
-        channel: ((slack-success-channel))
-        text: |
-          :white_check_mark: Successfully built Defect Dojo BOSH release
-          <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
 
   - name: deploy-defectdojo-staging
     plan:
@@ -122,19 +113,33 @@ jobs:
             defectdojo_oidc_userinfo_url: ((staging-defectdojo-oidc-userinfo-url))
             defectdojo_oidc_jwks_uri: ((staging-defectdojo-oidc-jwks-uri))
 
-    on_success:
-      put: slack
-      params:
-        <<: *slack-success-params
-        text: |
-          :white_check_mark: Successfully deployed defect dojo on staging
-          <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
     on_failure:
       put: slack
       params:
         <<: *slack-failure-params
         text: |
           :x: FAILED to deploy defect dojo on staging
+          <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
+
+  - name: staging-deduplication
+    plan:
+      - in_parallel:
+          - get: deploy-defectdojo-config
+            passed: [deploy-defectdojo-staging]
+            trigger: true
+          - get: general-task
+          - get: hourly
+            trigger: true
+      - task: set-deduplication
+        image: general-task
+        file: deploy-defectdojo-config/ci/set-deduplication.yml
+
+    on_failure:
+      put: slack
+      params:
+        <<: *slack-failure-params
+        text: |
+          :x: FAILED to turn on deduplication for staging DefectDojo
           <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
 
 resources:
@@ -200,6 +205,11 @@ resources:
     source:
       url: ((slack-webhook-url))
 
+  - name: hourly
+    type: time
+    source:
+      interval: 1h
+
   - name: general-task
     type: registry-image
     source:
@@ -243,5 +253,14 @@ resource_types:
       aws_access_key_id: ((ecr_aws_key))
       aws_secret_access_key: ((ecr_aws_secret))
       repository: s3-resource
+      aws_region: us-gov-west-1
+      tag: latest
+
+  - name: time
+    type: registry-image
+    source:
+      aws_access_key_id: ((ecr_aws_key))
+      aws_secret_access_key: ((ecr_aws_secret))
+      repository: time-resource
       aws_region: us-gov-west-1
       tag: latest

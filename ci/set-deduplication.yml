@@ -1,0 +1,8 @@
+inputs:
+  - name: deploy-defectdojo-config
+
+run: deploy-defectdojo-config/set_deduplication.sh
+
+params:
+  DEFECTDOJO_SYSTEM_SETTINGS_URL: ((defectdojo_system_settings_url))
+  DEFECTDOJO_AUTH_TOKEN: ((defectdojo_auth_token))
