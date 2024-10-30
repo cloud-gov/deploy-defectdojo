@@ -112,6 +112,7 @@ jobs:
             defectdojo_oidc_authorization_url: ((staging-defectdojo-oidc-authorization-url))
             defectdojo_oidc_userinfo_url: ((staging-defectdojo-oidc-userinfo-url))
             defectdojo_oidc_jwks_uri: ((staging-defectdojo-oidc-jwks-uri))
+            defectdojo_email_url: smtp://((smtp-user))@:((smtp-pass))@((smtp-host)):((smtp-port))
 
     on_failure:
       put: slack
