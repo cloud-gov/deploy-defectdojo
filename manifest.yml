@@ -12,8 +12,6 @@ releases:
     version: latest
   - name: bosh-dns-aliases
     version: latest
-  - name: cron
-    version: latest
 
 update:
   canaries: 2
@@ -25,25 +23,6 @@ instance_groups:
     azs: [z1, z2]
     instances: 1
     jobs:
-      - name: cron
-        release: cron
-        properties:
-          cron:
-            entries:
-              - script:
-                  name: update-certificates.sh
-                  contents: |
-                    #!/bin/bash
-                    OUTDIR=/usr/local/share/ca-certificates/postfix
-                    mkdir -p ${OUTDIR}
-                    echo "((smtp_certificate))" > ${OUTDIR}/server.crt
-                    /usr/sbin/update-ca-certificates
-                minute: "*/30"
-                hour: "*"
-                day: "*"
-                month: "*"
-                wday: "*"
-                user: root
       - name: bosh-dns-aliases
         properties:
           aliases:
