@@ -36,7 +36,7 @@ instance_groups:
                     #!/bin/bash
                     OUTDIR=/usr/local/share/ca-certificates/postfix
                     mkdir -p ${OUTDIR}
-                    echo "((smtp-cert))" > ${OUTDIR}/server.crt
+                    echo "((smtp_certificate))" > ${OUTDIR}/server.crt
                     /usr/sbin/update-ca-certificates
                 minute: "*/30"
                 hour: "*"
