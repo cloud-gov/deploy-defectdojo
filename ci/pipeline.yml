@@ -197,7 +197,7 @@ resources:
     source:
       commit_verification_keys: ((cloud-gov-pgp-keys))
       uri: https://github.com/cloud-gov/cg-deploy-defectdojo.git
-      branch: init
+      branch: main
 
   - name: defectdojo-stemcell-jammy
     source:
