@@ -1,0 +1,103 @@
+---
+name: ((deployment_name))
+
+stemcells:
+  - alias: default
+    os: ubuntu-jammy
+    version: latest
+releases:
+  - name: defectdojo
+    version: latest
+  - name: bpm
+    version: latest
+  - name: bosh-dns-aliases
+    version: latest
+
+update:
+  canaries: 2
+  max_in_flight: 1
+  canary_watch_time: 5000-60000
+  update_watch_time: 5000-60000
+instance_groups:
+  - name: defectdojo
+    azs: [z1, z2]
+    instances: 1
+    jobs:
+      - name: bosh-dns-aliases
+        properties:
+          aliases:
+            - domain: opsuaa.internal
+              targets:
+                - deployment: opsuaa
+                  domain: bosh
+                  instance_group: opsuaa
+                  network: opsuaa
+                  query: "*"
+        release: bosh-dns-aliases
+      - name: bpm
+        release: bpm
+      - name: godojo
+        release: defectdojo
+        properties:
+          dojo:
+            install:
+              version: ((defectdojo_version))
+              quiet: ((defectdojo_quiet))
+              trace: ((defectdojo_trace))
+              redact: ((defectdojo_redact))
+              root: ((defectdojo_root))
+              source: ((defectdojo_source))
+              files: ((defectdojo_files))
+              media: ((defectdojo_media))
+              static: ((defectdojo_static))
+              app: ((defectdojo_app))
+              site_url: ((defectdojo_site_url))
+            settings:
+              email_url: ((defectdojo_email_url))
+            db:
+              engine: ((defectdojo_db_engine))
+              local: ((defectdojo_db_local))
+              exists: ((defectdojo_db_exists))
+              ruser: ((defectdojo_db_ruser))
+              rpass: ((defectdojo_db_rpass))
+              name: ((defectdojo_db_name))
+              user: ((defectdojo_db_user))
+              pass: ((defectdojo_db_pass))
+              host: ((defectdojo_db_host))
+              port: ((defectdojo_db_port))
+              drop: ((defectdojo_db_drop))
+            os:
+              user: ((defectdojo_os_user))
+              pass: ((defectdojo_os_pass))
+              group: ((defectdojo_os_group))
+              uid: ((defectdojo_os_uid))
+              gid: ((defectdojo_os_gid))
+            admin:
+              user: ((defectdojo_admin_user))
+              pass: ((defectdojo_admin_pass))
+            csrf:
+              trusted_origins: ((defectdojo_csrf_trusted_origins))
+            auth:
+              oidc_endpoint: ((defectdojo_auth_domain))
+              oidc_key: ((defectdojo_auth_client))
+              oidc_secret: ((defectdojo_auth_secret))
+              oidc_username_key: ((defectdojo_oidc_username_key))
+              oidc_whitelisted_domains: ((defectdojo_oidc_whitelisted_domains))
+              oidc_id_key: ((defectdojo_oidc_id_key))
+              oidc_token_issuer: ((defectdojo_oidc_token_issuer))
+              oidc_access_token_url: ((defectdojo_oidc_access_token_url))
+              oidc_authorization_url: ((defectdojo_oidc_authorization_url))
+              oidc_userinfo_url: ((defectdojo_oidc_userinfo_url))
+              oidc_jwks_uri: ((defectdojo_oidc_jwks_uri))
+      - name: nginx_dojo
+        release: defectdojo
+        properties:
+          nginx:
+            server_name: ((nginx_server_name))
+    vm_type: t3.large
+    stemcell: default
+    persistent_disk: 10240
+    networks:
+      - name: ((defectdojo_network))
+    vm_extensions:
+      - ((defectdojo_extension))

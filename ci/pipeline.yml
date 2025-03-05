@@ -1,0 +1,286 @@
+---
+jobs:
+  - name: build-defectdojo-release
+    plan:
+      - in_parallel:
+          - get: release-git-repo
+            resource: defectdojo-release-git-repo
+            trigger: true
+          - get: pipeline-tasks
+          - get: final-builds-dir-tarball
+            resource: defectdojo-final-builds-dir-tarball
+          - get: releases-dir-tarball
+            resource: defectdojo-releases-dir-tarball
+          - get: general-task
+      - task: finalize-release
+        file: pipeline-tasks/finalize-bosh-release.yml
+        tags: [iaas]
+        params:
+          AWS_DEFAULT_REGION: ((aws_default_region))
+          AWS_ACCESS_KEY_ID: ((aws_access_key_id))
+          AWS_SECRET_ACCESS_KEY: ((aws_secret_access_key))
+          PRIVATE_YML_CONTENT: |-
+            ---
+            blobstore:
+              options:
+                region: ((s3-bosh-blobstore-info.region))
+                bucket_name: ((s3-bosh-blobstore-info.bucket_name))
+                credentials_source: ((s3-bosh-blobstore-info.credentials_source))
+                server_side_encryption: ((s3-bosh-blobstore-info.server_side_encryption))
+      - in_parallel:
+          - put: defectdojo-release
+            tags: [iaas]
+            params:
+              file: finalized-release/defectdojo-*.tgz
+          - put: defectdojo-final-builds-dir-tarball
+            tags: [iaas]
+            params:
+              file: finalized-release/final-builds-dir-defectdojo.tgz
+          - put: defectdojo-releases-dir-tarball
+            tags: [iaas]
+            params:
+              file: finalized-release/releases-dir-defectdojo.tgz
+    on_failure:
+      put: slack
+      params: &slack-failure-params
+        text: |
+          :x: FAILED to build Defect Dojo BOSH release
+          <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
+        channel: ((slack-success-channel))
+        username: ((slack-username))
+        icon_url: ((slack-icon-url))
+
+  - name: deploy-defectdojo-staging
+    plan:
+      - in_parallel:
+          - get: pipeline-tasks
+          - get: deploy-defectdojo-config
+          - get: defectdojo-release
+            passed: [build-defectdojo-release]
+          - get: defectdojo-stemcell-jammy
+          - get: general-task
+      - put: defectdojo-staging-deployment
+        params:
+          manifest: deploy-defectdojo-config/manifest.yml
+          releases:
+            - defectdojo-release/*.tgz
+          stemcells:
+            - defectdojo-stemcell-jammy/*.tgz
+          vars:
+            nginx_server_name: ((staging-nginx-server-name))
+            deployment_name: ((staging-deployment-name))
+            defectdojo_network: ((staging-defectdojo-network))
+            defectdojo_extension: ((staging-defectdojo-extension))
+            defectdojo_version: ((staging-defectdojo-version))
+            defectdojo_quiet: ((staging-defectdojo-quiet))
+            defectdojo_trace: ((staging-defectdojo-trace))
+            defectdojo_redact: ((staging-defectdojo-redact))
+            defectdojo_root: ((staging-defectdojo-root))
+            defectdojo_source: ((staging-defectdojo-source))
+            defectdojo_files: ((staging-defectdojo-files))
+            defectdojo_media: ((staging-defectdojo-media))
+            defectdojo_static: ((staging-defectdojo-static))
+            defectdojo_app: ((staging-defectdojo-app))
+            defectdojo_db_engine: ((staging-defectdojo-db-engine))
+            defectdojo_db_local: ((staging-defectdojo-db-local))
+            defectdojo_db_exists: ((staging-defectdojo-db-exists))
+            defectdojo_db_ruser: ((staging-defectdojo-db-ruser))
+            defectdojo_db_rpass: ((staging-defectdojo-db-rpass))
+            defectdojo_db_name: ((staging-defectdojo-db-name))
+            defectdojo_db_user: ((staging-defectdojo-db-user))
+            defectdojo_db_pass: ((staging-defectdojo-db-pass))
+            defectdojo_db_host: ((staging-defectdojo-db-host))
+            defectdojo_db_port: ((staging-defectdojo-db-port))
+            defectdojo_db_drop: ((staging-defectdojo-db-drop))
+            defectdojo_os_user: ((staging-defectdojo-os-user))
+            defectdojo_os_pass: ((staging-defectdojo-os-pass))
+            defectdojo_os_group: ((staging-defectdojo-os-group))
+            defectdojo_os_uid: ((staging-defectdojo-os-uid))
+            defectdojo_os_gid: ((staging-defectdojo-os-gid))
+            defectdojo_admin_user: ((staging-defectdojo-admin-user))
+            defectdojo_admin_pass: ((staging-defectdojo-admin-pass))
+            defectdojo_csrf_trusted_origins: ((staging-defectdojo-csrf-trusted-origins))
+            defectdojo_auth_client: ((staging-defectdojo-auth-client))
+            defectdojo_auth_secret: ((staging-defectdojo-auth-secret))
+            defectdojo_auth_domain: ((staging-defectdojo-auth-domain))
+            defectdojo_site_url: ((staging-defectdojo-site-url))
+            defectdojo_oidc_username_key: ((staging-defectdojo-oidc-username-key))
+            defectdojo_oidc_id_key: ((staging-defectdojo-oidc-id-key))
+            defectdojo_oidc_whitelisted_domains: ((staging-defectdojo-oidc-whitelisted-domains))
+            defectdojo_oidc_token_issuer: ((staging-defectdojo-oidc-token-issuer))
+            defectdojo_oidc_access_token_url: ((staging-defectdojo-oidc-access-token-url))
+            defectdojo_oidc_authorization_url: ((staging-defectdojo-oidc-authorization-url))
+            defectdojo_oidc_userinfo_url: ((staging-defectdojo-oidc-userinfo-url))
+            defectdojo_oidc_jwks_uri: ((staging-defectdojo-oidc-jwks-uri))
+            defectdojo_email_url: smtp+tls://cloudgov%40fr.cloud.gov:((smtp-pass))@((smtp-host)):((smtp-port))
+
+    on_failure:
+      put: slack
+      params:
+        <<: *slack-failure-params
+        text: |
+          :x: FAILED to deploy defect dojo on staging
+          <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
+
+  - name: staging-deduplication
+    plan:
+      - in_parallel:
+          - get: deploy-defectdojo-config
+            passed: [deploy-defectdojo-staging]
+            trigger: true
+          - get: general-task
+          - get: hourly
+            trigger: true
+      - task: set-deduplication
+        image: general-task
+        file: deploy-defectdojo-config/ci/set-deduplication.yml
+
+    on_failure:
+      put: slack
+      params:
+        <<: *slack-failure-params
+        text: |
+          :x: FAILED to turn on deduplication for staging DefectDojo
+          <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
+
+  - name: staging-test-import
+    plan:
+      - in_parallel:
+          - get: deploy-defectdojo-config
+            passed: [deploy-defectdojo-staging]
+            trigger: true
+          - get: general-task
+      - task: test-import
+        image: general-task
+        file: deploy-defectdojo-config/ci/import-test.yml
+
+    on_failure:
+      put: slack
+      params:
+        <<: *slack-failure-params
+        text: |
+          :x: FAILED to import test scan for staging DefectDojo
+          <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
+
+resources:
+  - name: defectdojo-release-git-repo
+    type: git
+    source:
+      commit_verification_keys: ((cloud-gov-pgp-keys))
+      uri: https://github.com/cloud-gov/defectdojo-boshrelease
+      branch: main
+
+  - name: defectdojo-final-builds-dir-tarball
+    type: s3-iam
+    source: &bosh-releases-bucket-info
+      bucket: ((s3-bosh-releases-bucket))
+      region_name: ((aws-region))
+      server_side_encryption: AES256
+      versioned_file: final-builds-dir-defectdojo.tgz
+
+  - name: defectdojo-releases-dir-tarball
+    type: s3-iam
+    source:
+      <<: *bosh-releases-bucket-info
+      versioned_file: releases-dir-defectdojo.tgz
+
+  - name: defectdojo-release
+    type: s3-iam
+    source:
+      bucket: ((s3-bosh-releases-bucket))
+      region_name: ((aws-region))
+      regexp: defectdojo-([\d\.]*).tgz
+      server_side_encryption: AES256
+
+  - name: deploy-defectdojo-config
+    type: git
+    source:
+      commit_verification_keys: ((cloud-gov-pgp-keys))
+      uri: https://github.com/cloud-gov/cg-deploy-defectdojo.git
+      branch: main
+
+  - name: defectdojo-stemcell-jammy
+    source:
+      name: bosh-aws-xen-hvm-ubuntu-jammy-go_agent
+    type: bosh-io-stemcell
+
+  - name: pipeline-tasks
+    type: git
+    source:
+      commit_verification_keys: ((cloud-gov-pgp-keys))
+      uri: https://github.com/cloud-gov/cg-pipeline-tasks.git
+      branch: main
+
+  - name: defectdojo-staging-deployment
+    type: bosh-deployment
+    source: &bosh-params-staging
+      target: ((defectdojo-staging-deployment-target))
+      client: ci
+      client_secret: ((tooling_bosh_uaa_ci_client_secret))
+      ca_cert: ((common_ca_cert))
+      deployment: defectdojo-staging
+
+  - name: slack
+    type: slack-notification
+    source:
+      url: ((slack-webhook-url))
+
+  - name: hourly
+    type: time
+    source:
+      interval: 1h
+
+  - name: general-task
+    type: registry-image
+    source:
+      aws_access_key_id: ((ecr_aws_key))
+      aws_secret_access_key: ((ecr_aws_secret))
+      repository: general-task
+      aws_region: us-gov-west-1
+      tag: latest
+
+resource_types:
+  - name: registry-image
+    type: registry-image
+    source:
+      aws_access_key_id: ((ecr_aws_key))
+      aws_secret_access_key: ((ecr_aws_secret))
+      repository: registry-image-resource
+      aws_region: us-gov-west-1
+      tag: latest
+
+  - name: slack-notification
+    type: registry-image
+    source:
+      aws_access_key_id: ((ecr_aws_key))
+      aws_secret_access_key: ((ecr_aws_secret))
+      repository: slack-notification-resource
+      aws_region: us-gov-west-1
+      tag: latest
+
+  - name: bosh-deployment
+    type: registry-image
+    source:
+      aws_access_key_id: ((ecr_aws_key))
+      aws_secret_access_key: ((ecr_aws_secret))
+      repository: bosh-deployment-resource
+      aws_region: us-gov-west-1
+      tag: latest
+
+  - name: s3-iam
+    type: registry-image
+    source:
+      aws_access_key_id: ((ecr_aws_key))
+      aws_secret_access_key: ((ecr_aws_secret))
+      repository: s3-resource
+      aws_region: us-gov-west-1
+      tag: latest
+
+  - name: time
+    type: registry-image
+    source:
+      aws_access_key_id: ((ecr_aws_key))
+      aws_secret_access_key: ((ecr_aws_secret))
+      repository: time-resource
+      aws_region: us-gov-west-1
+      tag: latest
