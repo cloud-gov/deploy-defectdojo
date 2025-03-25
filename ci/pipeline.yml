@@ -50,13 +50,77 @@ jobs:
         username: ((slack-username))
         icon_url: ((slack-icon-url))
 
-  - name: deploy-defectdojo-staging
+  - name: deploy-defectdojo-development
     plan:
       - in_parallel:
           - get: pipeline-tasks
           - get: deploy-defectdojo-config
           - get: defectdojo-release
             passed: [build-defectdojo-release]
+          - get: defectdojo-stemcell-jammy
+          - get: general-task
+      - put: defectdojo-development-deployment
+        params:
+          manifest: deploy-defectdojo-config/manifest.yml
+          releases:
+            - defectdojo-release/*.tgz
+          stemcells:
+            - defectdojo-stemcell-jammy/*.tgz
+          vars:
+            nginx_server_name: ((development-nginx-server-name))
+            deployment_name: ((development-deployment-name))
+            defectdojo_network: ((development-defectdojo-network))
+            defectdojo_extension: ((development-defectdojo-extension))
+            defectdojo_version: ((development-defectdojo-version))
+            defectdojo_quiet: ((development-defectdojo-quiet))
+            defectdojo_trace: ((development-defectdojo-trace))
+            defectdojo_redact: ((development-defectdojo-redact))
+            defectdojo_root: ((development-defectdojo-root))
+            defectdojo_source: ((development-defectdojo-source))
+            defectdojo_files: ((development-defectdojo-files))
+            defectdojo_media: ((development-defectdojo-media))
+            defectdojo_static: ((development-defectdojo-static))
+            defectdojo_app: ((development-defectdojo-app))
+            defectdojo_db_engine: ((development-defectdojo-db-engine))
+            defectdojo_db_local: ((development-defectdojo-db-local))
+            defectdojo_db_exists: ((development-defectdojo-db-exists))
+            defectdojo_db_ruser: ((development-defectdojo-db-ruser))
+            defectdojo_db_rpass: ((development-defectdojo-db-rpass))
+            defectdojo_db_name: ((development-defectdojo-db-name))
+            defectdojo_db_user: ((development-defectdojo-db-user))
+            defectdojo_db_pass: ((development-defectdojo-db-pass))
+            defectdojo_db_host: ((development-defectdojo-db-host))
+            defectdojo_db_port: ((development-defectdojo-db-port))
+            defectdojo_db_drop: ((development-defectdojo-db-drop))
+            defectdojo_os_user: ((development-defectdojo-os-user))
+            defectdojo_os_pass: ((development-defectdojo-os-pass))
+            defectdojo_os_group: ((development-defectdojo-os-group))
+            defectdojo_os_uid: ((development-defectdojo-os-uid))
+            defectdojo_os_gid: ((development-defectdojo-os-gid))
+            defectdojo_admin_user: ((development-defectdojo-admin-user))
+            defectdojo_admin_pass: ((development-defectdojo-admin-pass))
+            defectdojo_csrf_trusted_origins: ((development-defectdojo-csrf-trusted-origins))
+            defectdojo_auth_client: ((development-defectdojo-auth-client))
+            defectdojo_auth_secret: ((development-defectdojo-auth-secret))
+            defectdojo_auth_domain: ((development-defectdojo-auth-domain))
+            defectdojo_site_url: ((development-defectdojo-site-url))
+            defectdojo_oidc_username_key: ((development-defectdojo-oidc-username-key))
+            defectdojo_oidc_id_key: ((development-defectdojo-oidc-id-key))
+            defectdojo_oidc_whitelisted_domains: ((development-defectdojo-oidc-whitelisted-domains))
+            defectdojo_oidc_token_issuer: ((development-defectdojo-oidc-token-issuer))
+            defectdojo_oidc_access_token_url: ((development-defectdojo-oidc-access-token-url))
+            defectdojo_oidc_authorization_url: ((development-defectdojo-oidc-authorization-url))
+            defectdojo_oidc_userinfo_url: ((development-defectdojo-oidc-userinfo-url))
+            defectdojo_oidc_jwks_uri: ((development-defectdojo-oidc-jwks-uri))
+            defectdojo_email_url: smtp+tls://cloudgov%40fr.cloud.gov:((smtp-pass))@((smtp-host)):((smtp-port))
+
+  - name: deploy-defectdojo-staging
+    plan:
+      - in_parallel:
+          - get: pipeline-tasks
+          - get: deploy-defectdojo-config
+          - get: defectdojo-release
+            passed: [deploy-defectdojo-development]
           - get: defectdojo-stemcell-jammy
           - get: general-task
       - put: defectdojo-staging-deployment
@@ -210,6 +274,15 @@ resources:
       commit_verification_keys: ((cloud-gov-pgp-keys))
       uri: https://github.com/cloud-gov/cg-pipeline-tasks.git
       branch: main
+
+  - name: defectdojo-development-deployment
+    type: bosh-deployment
+    source: &bosh-params-staging
+      target: ((defectdojo-development-deployment-target))
+      client: ci
+      client_secret: ((tooling_bosh_uaa_ci_client_secret))
+      ca_cert: ((common_ca_cert))
+      deployment: defectdojo-development
 
   - name: defectdojo-staging-deployment
     type: bosh-deployment
