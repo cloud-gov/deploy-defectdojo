@@ -226,6 +226,123 @@ jobs:
           :x: FAILED to import test scan for staging DefectDojo
           <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
 
+  - name: deploy-defectdojo-production
+    plan:
+      - in_parallel:
+          - get: pipeline-tasks
+          - get: deploy-defectdojo-config
+          - get: defectdojo-release
+            passed:
+              [
+                deploy-defectdojo-staging,
+                staging-deuplication,
+                staging-test-import,
+              ]
+          - get: defectdojo-stemcell-jammy
+          - get: general-task
+      - put: defectdojo-production-deployment
+        params:
+          manifest: deploy-defectdojo-config/manifest.yml
+          releases:
+            - defectdojo-release/*.tgz
+          stemcells:
+            - defectdojo-stemcell-jammy/*.tgz
+          vars:
+            nginx_server_name: ((production-nginx-server-name))
+            deployment_name: ((production-deployment-name))
+            defectdojo_network: ((production-defectdojo-network))
+            defectdojo_extension: ((production-defectdojo-extension))
+            defectdojo_version: ((production-defectdojo-version))
+            defectdojo_quiet: ((production-defectdojo-quiet))
+            defectdojo_trace: ((production-defectdojo-trace))
+            defectdojo_redact: ((production-defectdojo-redact))
+            defectdojo_root: ((production-defectdojo-root))
+            defectdojo_source: ((production-defectdojo-source))
+            defectdojo_files: ((production-defectdojo-files))
+            defectdojo_media: ((production-defectdojo-media))
+            defectdojo_static: ((production-defectdojo-static))
+            defectdojo_app: ((production-defectdojo-app))
+            defectdojo_db_engine: ((production-defectdojo-db-engine))
+            defectdojo_db_local: ((production-defectdojo-db-local))
+            defectdojo_db_exists: ((production-defectdojo-db-exists))
+            defectdojo_db_ruser: ((production-defectdojo-db-ruser))
+            defectdojo_db_rpass: ((production-defectdojo-db-rpass))
+            defectdojo_db_name: ((production-defectdojo-db-name))
+            defectdojo_db_user: ((production-defectdojo-db-user))
+            defectdojo_db_pass: ((production-defectdojo-db-pass))
+            defectdojo_db_host: ((production-defectdojo-db-host))
+            defectdojo_db_port: ((production-defectdojo-db-port))
+            defectdojo_db_drop: ((production-defectdojo-db-drop))
+            defectdojo_os_user: ((production-defectdojo-os-user))
+            defectdojo_os_pass: ((production-defectdojo-os-pass))
+            defectdojo_os_group: ((production-defectdojo-os-group))
+            defectdojo_os_uid: ((production-defectdojo-os-uid))
+            defectdojo_os_gid: ((production-defectdojo-os-gid))
+            defectdojo_admin_user: ((production-defectdojo-admin-user))
+            defectdojo_admin_pass: ((production-defectdojo-admin-pass))
+            defectdojo_csrf_trusted_origins: ((production-defectdojo-csrf-trusted-origins))
+            defectdojo_auth_client: ((production-defectdojo-auth-client))
+            defectdojo_auth_secret: ((production-defectdojo-auth-secret))
+            defectdojo_auth_domain: ((production-defectdojo-auth-domain))
+            defectdojo_site_url: ((production-defectdojo-site-url))
+            defectdojo_oidc_username_key: ((production-defectdojo-oidc-username-key))
+            defectdojo_oidc_id_key: ((production-defectdojo-oidc-id-key))
+            defectdojo_oidc_whitelisted_domains: ((production-defectdojo-oidc-whitelisted-domains))
+            defectdojo_oidc_token_issuer: ((production-defectdojo-oidc-token-issuer))
+            defectdojo_oidc_access_token_url: ((production-defectdojo-oidc-access-token-url))
+            defectdojo_oidc_authorization_url: ((production-defectdojo-oidc-authorization-url))
+            defectdojo_oidc_userinfo_url: ((production-defectdojo-oidc-userinfo-url))
+            defectdojo_oidc_jwks_uri: ((production-defectdojo-oidc-jwks-uri))
+            defectdojo_email_url: smtp+tls://cloudgov%40fr.cloud.gov:((smtp-pass))@((smtp-host)):((smtp-port))
+
+    on_failure:
+      put: slack
+      params:
+        <<: *slack-failure-params
+        text: |
+          :x: FAILED to deploy defect dojo on production
+          <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
+
+  - name: production-deduplication
+    plan:
+      - in_parallel:
+          - get: deploy-defectdojo-config
+            passed: [deploy-defectdojo-production]
+            trigger: true
+          - get: general-task
+          - get: hourly
+            trigger: true
+      - task: set-deduplication
+        image: general-task
+        file: deploy-defectdojo-config/ci/set-deduplication.yml
+
+    on_failure:
+      put: slack
+      params:
+        <<: *slack-failure-params
+        text: |
+          :x: FAILED to turn on deduplication for production DefectDojo
+          <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
+
+  - name: production-test-import
+    plan:
+      - in_parallel:
+          - get: deploy-defectdojo-config
+            passed: [deploy-defectdojo-production]
+            trigger: true
+          - get: general-task
+      - task: test-import
+        image: general-task
+        file: deploy-defectdojo-config/ci/import-test.yml
+
+    on_failure:
+      put: slack
+      params:
+        <<: *slack-failure-params
+        text: |
+          :x: FAILED to import test scan for production DefectDojo
+          <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
+
 resources:
   - name: defectdojo-release-git-repo
     type: git
@@ -277,7 +394,7 @@ resources:
 
   - name: defectdojo-development-deployment
     type: bosh-deployment
-    source: &bosh-params-staging
+    source: &bosh-params-development
       target: ((defectdojo-development-deployment-target))
       client: ci
       client_secret: ((tooling_bosh_uaa_ci_client_secret))
@@ -292,6 +409,15 @@ resources:
       client_secret: ((tooling_bosh_uaa_ci_client_secret))
       ca_cert: ((common_ca_cert))
       deployment: defectdojo-staging
+
+  - name: defectdojo-production-deployment
+    type: bosh-deployment
+    source: &bosh-params-production
+      target: ((defectdojo-production-deployment-target))
+      client: ci
+      client_secret: ((tooling_bosh_uaa_ci_client_secret))
+      ca_cert: ((common_ca_cert))
+      deployment: defectdojo-production
 
   - name: slack
     type: slack-notification
