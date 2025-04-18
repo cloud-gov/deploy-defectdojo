@@ -21,7 +21,7 @@ update:
 instance_groups:
   - name: defectdojo
     azs: [z1, z2]
-    instances: 1
+    instances: 2
     jobs:
       - name: bosh-dns-aliases
         properties:
