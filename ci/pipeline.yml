@@ -192,12 +192,18 @@ jobs:
           - get: deploy-defectdojo-config
             passed: [deploy-defectdojo-staging]
             trigger: true
+          - get: defectdojo-release
+            passed: [deploy-defectdojo-staging]
+            trigger: true
           - get: general-task
           - get: hourly
             trigger: true
       - task: set-deduplication
         image: general-task
         file: deploy-defectdojo-config/ci/set-deduplication.yml
+        params:
+          DEFECTDOJO_SYSTEM_SETTINGS_URL: ((defectdojo_staging_system_settings_url))
+          DEFECTDOJO_AUTH_TOKEN: ((defectdojo_staging_auth_token))
 
     on_failure:
       put: slack
@@ -213,10 +219,16 @@ jobs:
           - get: deploy-defectdojo-config
             passed: [deploy-defectdojo-staging]
             trigger: true
+          - get: defectdojo-release
+            passed: [deploy-defectdojo-staging]
+            trigger: true
           - get: general-task
       - task: test-import
         image: general-task
         file: deploy-defectdojo-config/ci/import-test.yml
+        params:
+          DEFECTDOJO_IMPORT_URL: ((defectdojo_staging_import_url))
+          DEFECTDOJO_AUTH_TOKEN: ((defectdojo_staging_auth_token))
 
     on_failure:
       put: slack
@@ -235,7 +247,7 @@ jobs:
             passed:
               [
                 deploy-defectdojo-staging,
-                staging-deuplication,
+                staging-deduplication,
                 staging-test-import,
               ]
           - get: defectdojo-stemcell-jammy
@@ -315,6 +327,9 @@ jobs:
       - task: set-deduplication
         image: general-task
         file: deploy-defectdojo-config/ci/set-deduplication.yml
+        params:
+          DEFECTDOJO_SYSTEM_SETTINGS_URL: ((defectdojo_production_system_settings_url))
+          DEFECTDOJO_AUTH_TOKEN: ((defectdojo_production_auth_token))
 
     on_failure:
       put: slack
@@ -334,6 +349,9 @@ jobs:
       - task: test-import
         image: general-task
         file: deploy-defectdojo-config/ci/import-test.yml
+        params:
+          DEFECTDOJO_IMPORT_URL: ((defectdojo_production_import_url))
+          DEFECTDOJO_AUTH_TOKEN: ((defectdojo_production_auth_token))
 
     on_failure:
       put: slack
