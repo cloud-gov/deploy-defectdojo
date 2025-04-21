@@ -8,5 +8,5 @@ run:
   path: deploy-defectdojo-config/ci/set-deduplication.sh
 
 params:
-  DEFECTDOJO_SYSTEM_SETTINGS_URL: ((defectdojo_system_settings_url))
-  DEFECTDOJO_AUTH_TOKEN: ((defectdojo_auth_token))
+  DEFECTDOJO_SYSTEM_SETTINGS_URL:
+  DEFECTDOJO_AUTH_TOKEN:
