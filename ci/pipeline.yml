@@ -69,6 +69,7 @@ jobs:
           vars:
             nginx_server_name: ((development-nginx-server-name))
             deployment_name: ((development-deployment-name))
+            instances: ((development-instances))
             defectdojo_network: ((development-defectdojo-network))
             defectdojo_extension: ((development-defectdojo-extension))
             defectdojo_version: ((development-defectdojo-version))
@@ -133,6 +134,7 @@ jobs:
           vars:
             nginx_server_name: ((staging-nginx-server-name))
             deployment_name: ((staging-deployment-name))
+            instances: ((staging-instances))
             defectdojo_network: ((staging-defectdojo-network))
             defectdojo_extension: ((staging-defectdojo-extension))
             defectdojo_version: ((staging-defectdojo-version))
@@ -262,6 +264,7 @@ jobs:
           vars:
             nginx_server_name: ((production-nginx-server-name))
             deployment_name: ((production-deployment-name))
+            instances: ((production-instances))
             defectdojo_network: ((production-defectdojo-network))
             defectdojo_extension: ((production-defectdojo-extension))
             defectdojo_version: ((production-defectdojo-version))
