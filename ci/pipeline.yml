@@ -55,10 +55,16 @@ jobs:
       - in_parallel:
           - get: pipeline-tasks
           - get: deploy-defectdojo-config
+            trigger: true
           - get: defectdojo-release
             passed: [build-defectdojo-release]
+            trigger: true
           - get: defectdojo-stemcell-jammy
           - get: general-task
+          - get: defectdojo-upstream-release
+            trigger: true
+      - load_var: upstream-version
+        file: defectdojo-upstream-release/tag
       - put: defectdojo-development-deployment
         params:
           manifest: deploy-defectdojo-config/manifest.yml
@@ -72,7 +78,7 @@ jobs:
             instances: ((development-instances))
             defectdojo_network: ((development-defectdojo-network))
             defectdojo_extension: ((development-defectdojo-extension))
-            defectdojo_version: ((development-defectdojo-version))
+            defectdojo_version: ((.:upstream-version))
             defectdojo_quiet: ((development-defectdojo-quiet))
             defectdojo_trace: ((development-defectdojo-trace))
             defectdojo_redact: ((development-defectdojo-redact))
@@ -120,10 +126,18 @@ jobs:
       - in_parallel:
           - get: pipeline-tasks
           - get: deploy-defectdojo-config
+            passed: [deploy-defectdojo-development]
+            trigger: true
           - get: defectdojo-release
             passed: [deploy-defectdojo-development]
+            trigger: true
           - get: defectdojo-stemcell-jammy
           - get: general-task
+          - get: defectdojo-upstream-release
+            passed: [deploy-defectdojo-development]
+            trigger: true
+      - load_var: upstream-version
+        file: defectdojo-upstream-release/tag
       - put: defectdojo-staging-deployment
         params:
           manifest: deploy-defectdojo-config/manifest.yml
@@ -137,7 +151,7 @@ jobs:
             instances: ((staging-instances))
             defectdojo_network: ((staging-defectdojo-network))
             defectdojo_extension: ((staging-defectdojo-extension))
-            defectdojo_version: ((staging-defectdojo-version))
+            defectdojo_version: ((.:upstream-version))
             defectdojo_quiet: ((staging-defectdojo-quiet))
             defectdojo_trace: ((staging-defectdojo-trace))
             defectdojo_redact: ((staging-defectdojo-redact))
@@ -197,6 +211,8 @@ jobs:
           - get: defectdojo-release
             passed: [deploy-defectdojo-staging]
             trigger: true
+          - get: defectdojo-upstream-release
+            passed: [deploy-defectdojo-staging]
           - get: general-task
           - get: hourly
             trigger: true
@@ -224,6 +240,8 @@ jobs:
           - get: defectdojo-release
             passed: [deploy-defectdojo-staging]
             trigger: true
+          - get: defectdojo-upstream-release
+            passed: [deploy-defectdojo-staging]
           - get: general-task
       - task: test-import
         image: general-task
@@ -245,6 +263,12 @@ jobs:
       - in_parallel:
           - get: pipeline-tasks
           - get: deploy-defectdojo-config
+            passed:
+              [
+                deploy-defectdojo-staging,
+                staging-deduplication,
+                staging-test-import,
+              ]
           - get: defectdojo-release
             passed:
               [
@@ -254,6 +278,15 @@ jobs:
               ]
           - get: defectdojo-stemcell-jammy
           - get: general-task
+          - get: defectdojo-upstream-release
+            passed:
+              [
+                deploy-defectdojo-staging,
+                staging-deduplication,
+                staging-test-import,
+              ]
+      - load_var: upstream-version
+        file: defectdojo-upstream-release/tag
       - put: defectdojo-production-deployment
         params:
           manifest: deploy-defectdojo-config/manifest.yml
@@ -267,7 +300,7 @@ jobs:
             instances: ((production-instances))
             defectdojo_network: ((production-defectdojo-network))
             defectdojo_extension: ((production-defectdojo-extension))
-            defectdojo_version: ((production-defectdojo-version))
+            defectdojo_version: ((.:upstream-version))
             defectdojo_quiet: ((production-defectdojo-quiet))
             defectdojo_trace: ((production-defectdojo-trace))
             defectdojo_redact: ((production-defectdojo-redact))
@@ -459,6 +492,13 @@ resources:
       aws_region: us-gov-west-1
       tag: latest
 
+  - name: defectdojo-upstream-release
+    type: github-release
+    source:
+      owner: DefectDojo
+      repository: django-DefectDojo
+      access_token: ((cg-ci-bot-ghtoken))
+
 resource_types:
   - name: registry-image
     type: registry-image
@@ -502,5 +542,14 @@ resource_types:
       aws_access_key_id: ((ecr_aws_key))
       aws_secret_access_key: ((ecr_aws_secret))
       repository: time-resource
+      aws_region: us-gov-west-1
+      tag: latest
+
+  - name: github-release
+    type: registry-image
+    source:
+      aws_access_key_id: ((ecr_aws_key))
+      aws_secret_access_key: ((ecr_aws_secret))
+      repository: github-release-resource
       aws_region: us-gov-west-1
       tag: latest
