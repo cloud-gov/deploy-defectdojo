@@ -101,3 +101,4 @@ instance_groups:
       - name: ((defectdojo_network))
     vm_extensions:
       - ((defectdojo_extension))
+      - 10GB_root_disk
