@@ -1,6 +1,8 @@
 ---
 jobs:
   - name: build-defectdojo-release
+    serial: true
+    serial_groups: [development]
     plan:
       - in_parallel:
           - get: release-git-repo
@@ -51,6 +53,8 @@ jobs:
         icon_url: ((slack-icon-url))
 
   - name: deploy-defectdojo-development
+    serial: true
+    serial_groups: [development]
     plan:
       - in_parallel:
           - get: pipeline-tasks
@@ -122,6 +126,8 @@ jobs:
             defectdojo_email_url: smtp+tls://cloudgov%40fr.cloud.gov:((smtp-pass))@((smtp-host)):((smtp-port))
 
   - name: deploy-defectdojo-staging
+    serial: true
+    serial_groups: [staging]
     plan:
       - in_parallel:
           - get: pipeline-tasks
@@ -203,6 +209,8 @@ jobs:
           <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
 
   - name: staging-deduplication
+    serial: true
+    serial_groups: [staging]
     plan:
       - in_parallel:
           - get: deploy-defectdojo-config
@@ -232,6 +240,8 @@ jobs:
           <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
 
   - name: staging-test-import
+    serial: true
+    serial_groups: [staging]
     plan:
       - in_parallel:
           - get: deploy-defectdojo-config
@@ -259,6 +269,8 @@ jobs:
           <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
 
   - name: deploy-defectdojo-production
+    serial: true
+    serial_groups: [production]
     plan:
       - in_parallel:
           - get: pipeline-tasks
@@ -352,6 +364,8 @@ jobs:
           <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
 
   - name: production-deduplication
+    serial: true
+    serial_groups: [production]
     plan:
       - in_parallel:
           - get: deploy-defectdojo-config
@@ -376,6 +390,8 @@ jobs:
           <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
 
   - name: production-test-import
+    serial: true
+    serial_groups: [production]
     plan:
       - in_parallel:
           - get: deploy-defectdojo-config
