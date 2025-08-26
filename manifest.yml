@@ -54,6 +54,7 @@ instance_groups:
               site_url: ((defectdojo_site_url))
             settings:
               email_url: ((defectdojo_email_url))
+              scan_file_max_size: ((defectdojo_scan_file_max_size))
             db:
               engine: ((defectdojo_db_engine))
               local: ((defectdojo_db_local))
