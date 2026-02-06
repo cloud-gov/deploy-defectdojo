@@ -1,12 +1,5 @@
 ---
 jobs:
-  - name: set-self
-    plan:
-      - get: defectdojo-release-git-repo
-        trigger: true
-      - set_pipeline: self
-        file: defectdojo-release-git-repo/ci/pipeline.yml
-
   - name: build-defectdojo-release
     serial: true
     serial_groups: [development]
@@ -15,7 +8,6 @@ jobs:
           - get: release-git-repo
             resource: defectdojo-release-git-repo
             trigger: true
-            passed: [set-self]
           - get: pipeline-tasks
           - get: final-builds-dir-tarball
             resource: defectdojo-final-builds-dir-tarball
@@ -60,6 +52,13 @@ jobs:
         username: ((slack-username))
         icon_url: ((slack-icon-url))
 
+  - name: set-self
+    plan:
+      - get: deploy-defectdojo-config
+        trigger: true
+      - set_pipeline: self
+        file: deploy-defectdojo-config/ci/pipeline.yml
+
   - name: deploy-defectdojo-development
     serial: true
     serial_groups: [development]
@@ -68,6 +67,7 @@ jobs:
           - get: pipeline-tasks
           - get: deploy-defectdojo-config
             trigger: true
+            passed: [set-self]
           - get: defectdojo-release
             passed: [build-defectdojo-release]
             trigger: true
