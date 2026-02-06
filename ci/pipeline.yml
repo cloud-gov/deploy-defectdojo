@@ -1,5 +1,12 @@
 ---
 jobs:
+  - name: set-self
+    plan:
+      - get: defectdojo-release-git-repo
+        trigger: true
+      - set_pipeline: self
+        file: defectdojo-release-git-repo/ci/pipeline.yml
+
   - name: build-defectdojo-release
     serial: true
     serial_groups: [development]
@@ -8,6 +15,7 @@ jobs:
           - get: release-git-repo
             resource: defectdojo-release-git-repo
             trigger: true
+            passed: [set-self]
           - get: pipeline-tasks
           - get: final-builds-dir-tarball
             resource: defectdojo-final-builds-dir-tarball
