@@ -476,28 +476,28 @@ resources:
   - name: defectdojo-development-deployment
     type: bosh-deployment
     source: &bosh-params-development
-      target: ((defectdojo-development-deployment-target))
-      client: ci
-      client_secret: ((tooling_bosh_uaa_ci_client_secret))
-      ca_cert: ((common_ca_cert))
+      ca_cert: ((bosh-director-info.tooling.ca_cert))
+      client: ((bosh-director-info.tooling.client))
+      client_secret: ((bosh-director-info.tooling.client_secret))
+      target: ((bosh-director-info.tooling.environment))
       deployment: defectdojo-development
 
   - name: defectdojo-staging-deployment
     type: bosh-deployment
     source: &bosh-params-staging
-      target: ((defectdojo-staging-deployment-target))
-      client: ci
-      client_secret: ((tooling_bosh_uaa_ci_client_secret))
-      ca_cert: ((common_ca_cert))
+      ca_cert: ((bosh-director-info.tooling.ca_cert))
+      client: ((bosh-director-info.tooling.client))
+      client_secret: ((bosh-director-info.tooling.client_secret))
+      target: ((bosh-director-info.tooling.environment))
       deployment: defectdojo-staging
 
   - name: defectdojo-production-deployment
     type: bosh-deployment
     source: &bosh-params-production
-      target: ((defectdojo-production-deployment-target))
-      client: ci
-      client_secret: ((tooling_bosh_uaa_ci_client_secret))
-      ca_cert: ((common_ca_cert))
+      ca_cert: ((bosh-director-info.tooling.ca_cert))
+      client: ((bosh-director-info.tooling.client))
+      client_secret: ((bosh-director-info.tooling.client_secret))
+      target: ((bosh-director-info.tooling.environment))
       deployment: defectdojo-production
 
   - name: slack
